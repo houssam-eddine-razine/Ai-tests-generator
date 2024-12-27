@@ -1,0 +1,94 @@
+version: '3.9'
+
+services:
+  analysis-service:
+    build:
+      context: ./analysis-service
+      dockerfile: Dockerfile
+    container_name: analysis-service
+    ports:
+      - "8062:8062"
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}/database_service
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+    depends_on:
+      - database
+    networks:
+      - app-network
+
+  database-service:
+    build:
+      context: ./database-service
+      dockerfile: Dockerfile
+    container_name: database-service
+    ports:
+      - "8066:8066"
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}/database_service
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+    depends_on:
+      - database
+    networks:
+      - app-network
+
+  test-gen-service:
+    build:
+      context: ./test-gen-service
+      dockerfile: Dockerfile
+    container_name: test-gen-service
+    ports:
+      - "8064:8064"
+    depends_on:
+      - database-service
+    networks:
+      - app-network
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "8060:8060"
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}/database_service
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+    depends_on:
+      - database
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./project-analyzer
+      dockerfile: Dockerfile
+    container_name: angular-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - auth-service
+    networks:
+      - app-network
+
+  database:
+    image: mysql:8
+    container_name: database
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - app-network
+
+volumes:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge
