@@ -23,6 +23,15 @@ This project is an innovative application designed to automate the process of te
   - Automated build, test, and deployment processes with Jenkins.
 - **Code Quality Analysis**:
   - Integrated with SonarQube for code quality and security checks.
+ 
+## Implementation Video
+
+
+
+
+https://github.com/user-attachments/assets/56126ddc-0e04-44cf-a677-e94705573d14
+
+
 
 ## Project Architecture
 
